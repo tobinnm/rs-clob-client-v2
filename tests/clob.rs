@@ -2034,7 +2034,7 @@ mod authenticated {
                         "asset_id": token_1(),
                         "side": "BUY",
                         "size": "12.5",
-                        "fee_rate_bps": "5",
+                        "fee_rate_bps": "",
                         "price": "0.42",
                         "status": "MATCHED",
                         "match_time": "1705322096",
@@ -2050,7 +2050,7 @@ mod authenticated {
                                 "maker_address": "0x4444444444444444444444444444444444444444",
                                 "matched_amount": "5.0",
                                 "price": "0.42",
-                                "fee_rate_bps": "5",
+                                "fee_rate_bps": "",
                                 "asset_id": token_1(),
                                 "outcome": "YES",
                                 "side": "SELL"
@@ -2094,7 +2094,7 @@ mod authenticated {
             .asset_id(token_1())
             .side(Side::Buy)
             .size(dec!(12.5))
-            .fee_rate_bps(dec!(5))
+            .fee_rate_bps(Decimal::ZERO)
             .price(dec!(0.42))
             .status(TradeStatusType::Matched)
             .match_time("2024-01-15T12:34:56Z".parse().unwrap())
@@ -2110,7 +2110,7 @@ mod authenticated {
                     .maker_address(address!("0x4444444444444444444444444444444444444444"))
                     .matched_amount(dec!(5.0))
                     .price(dec!(0.42))
-                    .fee_rate_bps(dec!(5))
+                    .fee_rate_bps(Decimal::ZERO)
                     .asset_id(token_1())
                     .outcome("YES")
                     .side(Side::Sell)
