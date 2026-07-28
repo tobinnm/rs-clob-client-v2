@@ -21,6 +21,18 @@ use crate::clob::types::{OrderStatusType, OrderType, Side, TickSize, TradeStatus
 use crate::serde_helpers::StringFromAny;
 use crate::types::{Address, B256, Decimal, U256};
 
+fn empty_string_as_zero_hash<'de, D>(deserializer: D) -> std::result::Result<B256, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value = String::deserialize(deserializer)?;
+    if value.trim().is_empty() {
+        Ok(B256::ZERO)
+    } else {
+        value.parse().map_err(serde::de::Error::custom)
+    }
+}
+
 #[non_exhaustive]
 #[derive(Clone, Debug, Deserialize, Builder, PartialEq)]
 pub struct MidpointResponse {
@@ -403,7 +415,9 @@ pub struct TradeResponse {
     #[serde(default)]
     #[serde_as(deserialize_as = "DefaultOnNull")]
     pub maker_orders: Vec<MakerOrder>,
-    /// On-chain transaction hash.
+    /// On-chain transaction hash. Zero when a failed or pending trade has not
+    /// been submitted on-chain.
+    #[serde(default, deserialize_with = "empty_string_as_zero_hash")]
     pub transaction_hash: B256,
     pub trader_side: TraderSide,
     #[serde(default)]
