@@ -1443,7 +1443,7 @@ mod authenticated {
     };
     #[cfg(feature = "heartbeats")]
     use polymarket_client_sdk_v2::error::Synchronization;
-    use polymarket_client_sdk_v2::types::{Address, address, b256};
+    use polymarket_client_sdk_v2::types::{Address, B256, address, b256};
 
     use super::*;
     use crate::common::{
@@ -2142,6 +2142,52 @@ mod authenticated {
         assert_eq!(response, expected);
         mock.assert();
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn trades_should_accept_a_failed_trade_without_transaction_hash() -> anyhow::Result<()> {
+        let server = MockServer::start();
+        let client = create_authenticated(&server).await?;
+
+        let mock = server.mock(|when, then| {
+            when.method(GET)
+                .path("/data/trades")
+                .query_param("id", "failed");
+            then.status(StatusCode::OK).json_body(json!({
+                "data": [{
+                    "id": "failed",
+                    "taker_order_id": "taker_123",
+                    "market": "0x000000000000000000000000000000000000000000000000000000006d61726b",
+                    "asset_id": token_1(),
+                    "side": "BUY",
+                    "size": "20",
+                    "fee_rate_bps": "",
+                    "price": "0.47",
+                    "status": "FAILED",
+                    "match_time": "1705322096",
+                    "last_update": "1705322130",
+                    "outcome": "NO",
+                    "bucket_index": 0,
+                    "owner": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                    "maker_address": "0x2222222222222222222222222222222222222222",
+                    "maker_orders": [],
+                    "trader_side": "TAKER",
+                    "error_msg": "execution failed"
+                }],
+                "limit": 1,
+                "count": 1,
+                "next_cursor": "LTE="
+            }));
+        });
+
+        let response = client
+            .trades(&TradesRequest::builder().id("failed").build(), None)
+            .await?;
+
+        assert_eq!(response.data[0].status, TradeStatusType::Failed);
+        assert_eq!(response.data[0].transaction_hash, B256::ZERO);
+        mock.assert();
         Ok(())
     }
 
