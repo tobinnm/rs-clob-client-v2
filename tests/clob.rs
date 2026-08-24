@@ -2777,11 +2777,11 @@ mod authenticated {
                 .query_param("date", date.to_string())
                 .query_param("signature_type", (SignatureType::Eoa as u8).to_string());
             then.status(StatusCode::OK).json_body(json!([{
-                "date": "2025-12-08",
+                "date": "2025-12-08T00:00:00Z",
                 "asset_address": "0x0000000000000000000000000000000000000001",
                 "maker_address": "0x0000000000000000000000000000000000000002",
-                "earnings": 1,
-                "asset_rate": "0.1"
+                "earnings": 1.25,
+                "asset_rate": 0.999886
             }]));
         });
 
@@ -2792,8 +2792,8 @@ mod authenticated {
                 .date(date)
                 .asset_address(address!("0x0000000000000000000000000000000000000001"))
                 .maker_address(address!("0x0000000000000000000000000000000000000002"))
-                .earnings(Decimal::ONE)
-                .asset_rate(dec!(0.1))
+                .earnings(dec!(1.25))
+                .asset_rate(dec!(0.999886))
                 .build(),
         ];
 

@@ -21,6 +21,20 @@ use crate::clob::types::{OrderStatusType, OrderType, Side, TickSize, TradeStatus
 use crate::serde_helpers::StringFromAny;
 use crate::types::{Address, B256, Decimal, U256};
 
+fn date_or_datetime<'de, D>(deserializer: D) -> std::result::Result<NaiveDate, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value = String::deserialize(deserializer)?;
+    if let Ok(date) = NaiveDate::parse_from_str(&value, "%Y-%m-%d") {
+        return Ok(date);
+    }
+
+    DateTime::parse_from_rfc3339(&value)
+        .map(|date_time| date_time.date_naive())
+        .map_err(serde::de::Error::custom)
+}
+
 #[non_exhaustive]
 #[derive(Clone, Debug, Deserialize, Builder, PartialEq)]
 pub struct MidpointResponse {
@@ -549,6 +563,7 @@ pub struct MakerOrder {
 #[derive(Debug, Clone, Deserialize, Builder, PartialEq)]
 #[builder(on(String, into))]
 pub struct UserEarningResponse {
+    #[serde(deserialize_with = "date_or_datetime")]
     pub date: NaiveDate,
     /// The market condition ID (unique market identifier).
     pub condition_id: B256,
@@ -562,6 +577,7 @@ pub struct UserEarningResponse {
 #[derive(Debug, Clone, Deserialize, Builder, PartialEq)]
 #[builder(on(String, into))]
 pub struct TotalUserEarningResponse {
+    #[serde(deserialize_with = "date_or_datetime")]
     pub date: NaiveDate,
     pub asset_address: Address,
     pub maker_address: Address,
